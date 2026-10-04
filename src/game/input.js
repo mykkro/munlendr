@@ -1,5 +1,5 @@
 import { CONFIG } from '../config.js';
-import { add, scale, cross } from '../math/vec3.js';
+import { cross } from '../math/vec3.js';
 import { rotate, conjugate } from '../math/quat.js';
 
 const ACTION_KEYS = {
@@ -133,22 +133,25 @@ export class Input {
   }
 }
 
-function resolve(v, magnitude) {
-  const m = Math.max(Math.abs(v[0]), Math.abs(v[1]));
-  if (m < 1e-9 || magnitude === 0) return [0, 0];
-  return [(v[0] / m) * magnitude, (v[1] / m) * magnitude];
+// Each key axis drives exactly one thruster pair: `a` (W/S or I/K) snaps to the body axis it is closest to,
+// and `b` (A/D or J/L), being perpendicular to it, takes the other axis. So one key fires one pair at any
+// camera angle (never all four), and two keys fire both pairs.
+function pairCommand(a, b, ia, ib) {
+  const out = [0, 0];
+  const ka = Math.abs(a[0]) >= Math.abs(a[1]) ? 0 : 1, kb = 1 - ka;
+  if (ia) out[ka] += Math.sign(a[ka]) * ia;
+  if (ib) out[kb] += Math.sign(b[kb]) * ib;
+  return out;
 }
 
 // Tilting the nose toward a horizontal direction d needs a torque about cross(up, d).
 export function mapControls(intent, frame, q) {
   const { forward, right, up } = frame;
-  const torqueW = add(scale(cross(up, forward), intent.pitch), scale(cross(up, right), intent.yaw));
-  const forceW = add(scale(forward, intent.fwd), scale(right, intent.right));
   const inv = conjugate(q);
-  const tb = rotate(inv, torqueW), fb = rotate(inv, forceW);
+  const toBody = (w) => rotate(inv, w);
   return {
-    rot: resolve([tb[0], tb[1]], Math.min(1, Math.hypot(intent.pitch, intent.yaw))),
-    trans: resolve([fb[0], fb[1]], Math.min(1, Math.hypot(intent.fwd, intent.right))),
+    rot: pairCommand(toBody(cross(up, forward)), toBody(cross(up, right)), intent.pitch, intent.yaw),
+    trans: pairCommand(toBody(forward), toBody(right), intent.fwd, intent.right),
   };
 }
 

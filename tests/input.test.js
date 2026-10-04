@@ -106,6 +106,20 @@ test('body frame: W tilts the nose toward body +X (torque about +Y); L slides to
   close(t.trans[0], 0); close(t.trans[1], -1);
 });
 
+test('one key fires one thruster pair at any camera angle; two keys fire two pairs', async () => {
+  const { mixThrusters } = await import('../src/sim/actuators.js');
+  const { fromAxisAngle } = await import('../src/math/quat.js');
+  const frame = { forward: [1, 0, 0], right: [0, -1, 0], up: [0, 0, 1] };
+  const fired = (intent, q) => { const m = mapControls(intent, frame, q); return mixThrusters(m.rot, m.trans).filter(Boolean).length; };
+  for (let deg = 0; deg < 360; deg += 5) {
+    const q = fromAxisAngle([0, 0, 1], (deg * Math.PI) / 180);
+    for (const one of [{ pitch: 1 }, { yaw: -1 }, { fwd: 1 }, { right: 1 }]) {
+      assert.equal(fired({ pitch: 0, yaw: 0, fwd: 0, right: 0, ...one }, q), 2, `${JSON.stringify(one)} at ${deg} deg`);
+    }
+    assert.equal(fired({ pitch: 1, yaw: 1, fwd: 0, right: 0 }, q), 4, `W+D at ${deg} deg`);
+  }
+});
+
 test('camera frame: W tilts toward the camera forward direction whatever the body heading', () => {
   // world: x = east, y = north, z = up; the rocket's body X points north
   const q = fromBasis([0, 1, 0], [-1, 0, 0], [0, 0, 1]);
