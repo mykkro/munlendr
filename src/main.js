@@ -145,6 +145,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pauseFlight(); });
+window.addEventListener('contextmenu', (e) => e.preventDefault()); // no browser menu on right-click anywhere in the game
 window.addEventListener('beforeunload', (e) => {
   if (state === 'flying' || state === 'paused') {
     e.preventDefault();
