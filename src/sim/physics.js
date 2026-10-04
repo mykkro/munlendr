@@ -4,6 +4,7 @@ import { rotate, integrate } from '../math/quat.js';
 import { totalMass, centerOfMassZ, transverseInertia } from './rocket.js';
 import { mixThrusters, updateEngine, updateThrusters, thrusterForcesAndTorque, propellantFlow } from './actuators.js';
 import { sasCommand } from './sas.js';
+import { computeContacts } from './contact.js';
 
 export function step(s, cmd, env, dt) {
   const cfg = env.cfg ?? CONFIG;
@@ -26,7 +27,11 @@ export function step(s, cmd, env, dt) {
   const tf = thrusterForcesAndTorque(s, zcm, rc);
   let force = add(rotate(s.q, [tf.force[0], tf.force[1], tf.force[2] + thrust]), scale(env.body.gravity(s.r), m));
   let torque = tf.torque;
-  const contact = null;
+  const contact = env.contacts === false ? null : computeContacts(s, zcm, env.body, cfg);
+  if (contact) {
+    force = add(force, contact.force);
+    torque = add(torque, contact.torque);
+  }
 
   // 4. semi-implicit Euler
   s.v = addScaled(s.v, force, dt / m);
