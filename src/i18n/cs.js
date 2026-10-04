@@ -2,7 +2,7 @@
 const plural = (n, one, few, many) => (n === 1 ? one : n >= 2 && n <= 4 ? few : many);
 
 export const cs = {
-  'title.tagline': 'Plánuj motorem. Dolaďuj tryskami.',
+  'title.tagline': 'Motorem brzdi, tryskami miř.',
   'lang.label': 'Jazyk',
 
   'btn.play': 'Hrát',
