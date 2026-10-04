@@ -1,4 +1,4 @@
-# Munlendr
+# Moon Lander
 
 A toon-shaded 3D lunar lander for the browser. Plain HTML and JavaScript, no backend. Progress, best scores and settings are kept in `localStorage`.
 
@@ -44,3 +44,9 @@ A gamepad with the standard layout also works (triggers throttle, left stick til
 - `src/render/` — Three.js scene, toon materials and outlines, LOD planet (built in Web Workers), rocket and effects, cameras
 - `src/hud/`, `src/ui/` — HUD panels and menus
 - `docs/` — the concept PDF, the design spec and the implementation plan
+
+## Credits
+
+- [Three.js](https://threejs.org) (MIT), vendored in `vendor/three/`.
+- Title font [Fredoka](https://github.com/hafontia/Fredoka-One) (SIL Open Font License 1.1), vendored in `vendor/fonts/` with its licence.
+- The title illustration `assets/title.svg` was drawn for this project.

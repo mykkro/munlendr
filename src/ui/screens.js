@@ -1,12 +1,14 @@
 import { escapeHtml as h } from '../hud/format.js';
 import { MISSIONS, isUnlocked } from '../game/missions.js';
+import { CONTROL_GROUPS, TIPS, HUD_GUIDE } from './controls.js';
 
-const KEYS_HELP = [
-  ['Shift / R', 'Throttle up'], ['Ctrl / F', 'Throttle down'], ['Z', 'Full throttle'], ['X', 'Cut engine'],
-  ['W / S', 'Pitch toward / away'], ['A / D', 'Yaw left / right'], ['I J K L', 'Slide without tilting'],
-  ['T', 'Stability assist'], ['C', 'Next camera'], ['Drag / wheel', 'Orbit / zoom camera'],
-  ['G', 'Prediction aids (easy)'], ['V', 'Vehicle view'], ['H', 'Hide HUD'], ['Esc', 'Pause'],
-];
+const keyCaps = (keys) => keys.map((k) => `<kbd>${h(k)}</kbd>`).join(' ');
+
+function controlsTable(withPad) {
+  return CONTROL_GROUPS.map((g) => `
+    <h3>${h(g.title)}</h3>
+    <table class="keys">${g.rows.map((r) => `<tr><td>${keyCaps(r.keys)}</td>${withPad ? `<td class="pad">${h(r.pad)}</td>` : ''}<td>${h(r.action)}</td></tr>`).join('')}</table>`).join('');
+}
 const GRADE_LABEL = { perfect: 'Perfect', safe: 'Safe', crash: 'Crash' };
 const CHECK_LABEL = { vs: 'Vertical speed', hs: 'Horizontal speed', tilt: 'Tilt', rate: 'Angular rate', slope: 'Ground slope' };
 const CHECK_UNIT = { vs: 'm/s', hs: 'm/s', tilt: '°', rate: '°/s', slope: '°' };
@@ -32,13 +34,34 @@ export function hideScreens(root) {
   root.classList.add('hidden');
 }
 
-export function renderTitle(root, { onPlay, onSettings }) {
-  const el = mount(root, `<div class="card title">
-    <h1>Munlendr</h1><p class="sub">Plan with the engine. Correct with the thrusters.</p>
-    <button class="primary" data-a="play">Play</button><button data-a="settings">Settings</button></div>`);
+export function renderTitle(root, { onPlay, onHelp, onSettings }) {
+  const el = mount(root, `<img class="title-art" src="assets/title.svg" alt="">
+    <div class="card title">
+    <h1>Moon Lander</h1><p class="sub">Plan with the engine. Correct with the thrusters.</p>
+    <button class="primary" data-a="play">Play</button>
+    <button data-a="help">How to play</button>
+    <button data-a="settings">Settings</button></div>`);
   on(el, '[data-a=play]', onPlay);
+  on(el, '[data-a=help]', onHelp);
   on(el, '[data-a=settings]', onSettings);
   el.querySelector('[data-a=play]').focus();
+}
+
+export function renderHelp(root, { onBack }) {
+  const el = mount(root, `<div class="card wide help">
+    <h2>How to play</h2>
+    <p>Fly the lander down and touch the ground gently, upright and slow. The main engine pushes along the lander's axis, so tilt to steer.</p>
+    <div class="help-cols">
+      <section>${controlsTable(true)}</section>
+      <section>
+        <h3>Tips</h3><ul class="tips">${TIPS.map((t) => `<li>${h(t)}</li>`).join('')}</ul>
+        <h3>Reading the HUD</h3>
+        <table class="keys hud-guide">${HUD_GUIDE.map(([k, d]) => `<tr><td><b>${h(k)}</b></td><td>${h(d)}</td></tr>`).join('')}</table>
+      </section>
+    </div>
+    <div class="actions"><button class="primary" data-a="back">Back</button></div></div>`);
+  on(el, '[data-a=back]', onBack);
+  el.querySelector('[data-a=back]').focus({ preventScroll: true }); // keep the help scrolled to the top
 }
 
 const bestLine = (best) => (best ? `${best.score}${best.medal ? ` <span class="medal ${best.medal}">${best.medal}</span>` : ''}` : '<span class="muted">—</span>');
@@ -77,7 +100,7 @@ export function renderBriefing(root, { mission, difficulty, onStart, onBack }) {
       <button data-d="easy" class="${difficulty === 'easy' ? 'sel' : ''}"><b>Easy</b><span>Fixed centre of mass · prediction aids</span></button>
       <button data-d="hard" class="${difficulty === 'hard' ? 'sel' : ''}"><b>Hard</b><span>Shifting centre of mass · no aids · score ×1.5</span></button>
     </div>
-    <details><summary>Controls</summary><table class="keys">${KEYS_HELP.map(([k, d]) => `<tr><td><kbd>${h(k)}</kbd></td><td>${h(d)}</td></tr>`).join('')}</table></details>
+    <details><summary>Controls</summary>${controlsTable(false)}</details>
     <div class="actions"><button data-a="back">Back</button><button class="primary" data-a="start">Launch</button></div></div>`);
   let chosen = difficulty;
   el.querySelectorAll('[data-d]').forEach((b) => b.addEventListener('click', () => {
@@ -103,13 +126,15 @@ export function renderError(root, { message, onBack }) {
   on(el, '[data-a=back]', onBack);
 }
 
-export function renderPause(root, { onResume, onRestart, onSettings, onQuit }) {
+export function renderPause(root, { onResume, onRestart, onHelp, onSettings, onQuit }) {
   const el = mount(root, `<div class="card"><h2>Paused</h2>
     <button class="primary" data-a="resume">Resume (Esc)</button>
+    <button data-a="help">How to play</button>
     <button data-a="restart">Restart mission</button>
     <button data-a="settings">Settings</button>
     <button data-a="quit">Quit to menu</button></div>`);
   on(el, '[data-a=resume]', onResume);
+  on(el, '[data-a=help]', onHelp);
   on(el, '[data-a=restart]', onRestart);
   on(el, '[data-a=settings]', onSettings);
   on(el, '[data-a=quit]', onQuit);

@@ -11,6 +11,7 @@ const TEMPLATE = `
   <span class="chip" data-k="chipAids">AIDS</span>
   <span class="chip" data-k="chipFrame">CAM</span>
   <span class="chip" data-k="chipCam">CHASE</span>
+  <span class="hint"><kbd>Esc</kbd> pause &amp; help</span>
   <div class="hud-messages" data-k="messages"></div>
 </div>
 <div class="panel hud-height">

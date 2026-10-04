@@ -41,7 +41,7 @@ function showTitle() {
   stopFlight();
   state = 'menu';
   if (rendererError) return UI.renderError(screens, { message: rendererError, onBack: () => location.reload() });
-  UI.renderTitle(screens, { onPlay: showSelect, onSettings: () => showSettings(showTitle) });
+  UI.renderTitle(screens, { onPlay: showSelect, onHelp: () => UI.renderHelp(screens, { onBack: showTitle }), onSettings: () => showSettings(showTitle) });
 }
 
 function showSelect() {
@@ -94,6 +94,7 @@ function showPauseMenu() {
   UI.renderPause(screens, {
     onResume: resumeFlight,
     onRestart: () => startFlight(current.mission, current.difficulty),
+    onHelp: () => UI.renderHelp(screens, { onBack: showPauseMenu }),
     onSettings: () => showSettings(showPauseMenu),
     onQuit: showTitle,
   });
