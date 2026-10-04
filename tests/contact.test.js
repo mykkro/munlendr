@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { step } from '../src/sim/physics.js';
-import { computeContacts, touchdownMetrics, gradeTouchdown, LandingJudge, tiltDeg } from '../src/sim/contact.js';
+import { computeContacts, touchdownMetrics, gradeTouchdown, LandingJudge, tiltDeg, groundTiltDeg } from '../src/sim/contact.js';
 import { createRocketState } from '../src/sim/rocket.js';
 import { createBody } from '../src/sim/body.js';
 import { latLonToDir, tangentBasis } from '../src/sim/frame.js';
-import { fromBasis, fromAxisAngle, multiply } from '../src/math/quat.js';
-import { scale } from '../src/math/vec3.js';
+import { fromBasis, fromAxisAngle, multiply, rotate } from '../src/math/quat.js';
+import { scale, add } from '../src/math/vec3.js';
 import { CONFIG } from '../src/config.js';
 
 const dt = 1 / 120;
@@ -113,6 +113,17 @@ test('a fast impact that hits legs and hull in the same step reports the speed, 
   j.update({ contact: contactOf(true, true), engineOff: true, tiltDeg: 1, metricsFn: () => ({ ...good(), vs: 40 }), dt });
   assert.equal(j.status, 'crashed');
   assert.equal(j.reason, 'vs');
+});
+
+test('tip-over tilt is measured against the ground under the feet, not the local vertical', () => {
+  // a lander resting square on a 9.5 degree slope: its axis follows the slope normal
+  const slopeAxis = fromAxisAngle(north, (9.5 * Math.PI) / 180);
+  const q = multiply(slopeAxis, fromBasis(east, north, site));
+  const s = createRocketState({ position: scale(site, R + 3.4), velocity: [0, 0, 0], orientation: q, fuel: 300 });
+  const feet = CONFIG.legs.feet.map((f) => ({ groundPoint: add(s.r, rotate(q, f)) }));
+  assert.ok(tiltDeg(s) > 9);
+  assert.ok(groundTiltDeg(s, { feet }) < 0.1);
+  assert.ok(Math.abs(groundTiltDeg(s, { feet: [] }) - tiltDeg(s)) < 1e-9);
 });
 
 test('tipping past 10 degrees during settle is a crash', () => {

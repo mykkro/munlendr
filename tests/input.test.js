@@ -47,6 +47,20 @@ test('Ctrl combos and game keys are prevented during flight (Ctrl+W would close 
   assert.equal(s.defaultPrevented, true);
 });
 
+test('shortcut guard keeps blocking Ctrl combos after input is disabled (crash, pause, results)', () => {
+  const { target, input } = setup();
+  input.setGuard(true);
+  input.setEnabled(false);
+  const e = key('keydown', 'KeyS', { ctrlKey: true });
+  target.dispatchEvent(e);
+  assert.equal(e.defaultPrevented, true);
+  assert.deepEqual(input.update(0.01).actions, []);
+  input.setGuard(false);
+  const f = key('keydown', 'KeyS', { ctrlKey: true });
+  target.dispatchEvent(f);
+  assert.equal(f.defaultPrevented, false);
+});
+
 test('nothing is prevented outside flight', () => {
   const { target, input } = setup();
   input.setEnabled(false);

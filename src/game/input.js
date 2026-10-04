@@ -26,6 +26,7 @@ export class Input {
     this.queue = [];
     this.throttle = 0;
     this.enabled = false;
+    this.guard = false;
     this.padPrev = {};
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onKeyUp = this.onKeyUp.bind(this);
@@ -55,9 +56,14 @@ export class Input {
     this.throttle = throttle;
   }
 
+  // The guard outlives `enabled`: a held Ctrl+S/D/W must stay blocked through a crash, pause or results.
+  setGuard(on) {
+    this.guard = on;
+  }
+
   onKeyDown(e) {
+    if ((this.enabled || this.guard) && (GAME_CODES.has(e.code) || e.ctrlKey)) e.preventDefault();
     if (!this.enabled) return;
-    if (GAME_CODES.has(e.code) || e.ctrlKey) e.preventDefault();
     this.held.add(e.code);
     if (e.repeat) return;
     const action = ACTION_KEYS[e.code];

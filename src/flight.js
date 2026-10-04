@@ -94,6 +94,7 @@ export class Flight {
     this.running = true;
     this.input.reset(0);
     this.input.setEnabled(true);
+    this.input.setGuard(true);
     this.rig.attach(this.sr.renderer.domElement);
     this.lastTime = null;
     requestAnimationFrame(this.frame);
@@ -233,6 +234,7 @@ export class Flight {
     this.running = false;
     this.disposed = true;
     this.input.setEnabled(false);
+    this.input.setGuard(false);
     this.rig.detach();
     this.planet.dispose();
     this.sr.scene.remove(this.model.root);

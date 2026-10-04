@@ -4,8 +4,11 @@ import { FlightSession } from '../src/game/session.js';
 import { getMission } from '../src/game/missions.js';
 import { cloneState } from '../src/sim/rocket.js';
 import { tangentBasis } from '../src/sim/frame.js';
-import { fromBasis } from '../src/math/quat.js';
-import { scale, dot, normalize, length, sub } from '../src/math/vec3.js';
+import { fromBasis, fromAxisAngle, multiply, rotate } from '../src/math/quat.js';
+import { createBody } from '../src/sim/body.js';
+import { latLonToDir } from '../src/sim/frame.js';
+import { CONFIG } from '../src/config.js';
+import { scale, dot, normalize, length, sub, add } from '../src/math/vec3.js';
 
 const dt = 1 / 120;
 
@@ -58,6 +61,24 @@ test('slamming into the pad crashes with zero score and stops the simulation', (
   const t = s.state.time;
   s.step(dt, {});
   assert.equal(s.state.time, t);
+});
+
+test('a square touchdown on a 9.9 degree slope (still "safe") lands instead of tipping over', () => {
+  const R = CONFIG.moon.radius;
+  const site = latLonToDir(8, 23);
+  const { east, north } = tangentBasis(site);
+  const slope = (9.9 * Math.PI) / 180;
+  const terrain = { seed: 1, radius: R, height: (d) => Math.tan(slope) * dot(sub(scale(d, R), scale(site, R)), east) };
+  const body = createBody({ radius: R, gm: CONFIG.moon.gm, terrain });
+  const world = { body, terrain, siteDir: site, sitePoint: body.surfacePoint(site), pads: [], padHints: [], sunDir: site };
+  const s = new FlightSession({ mission: getMission(1), difficulty: 'easy', world });
+  s.sas = false;
+  const q = multiply(fromAxisAngle(north, -slope), fromBasis(east, north, site)); // axis along the slope normal
+  const normal = rotate(q, [0, 0, 1]);
+  Object.assign(s.state, { r: add(body.surfacePoint(site), scale(normal, 3.45)), v: scale(normal, -0.3), q, w: [0, 0, 0] });
+  s.prev = cloneState(s.state);
+  const r = runUntilOutcome(s, 10);
+  assert.equal(r?.outcome, 'landed', JSON.stringify(r && { reason: r.reason, checks: r.checks }));
 });
 
 test('aids are only available on easy', () => {

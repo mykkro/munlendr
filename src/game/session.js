@@ -1,7 +1,7 @@
 import { CONFIG } from '../config.js';
 import { step as physicsStep } from '../sim/physics.js';
 import { cloneState } from '../sim/rocket.js';
-import { LandingJudge, EMPTY_CONTACT, tiltDeg, touchdownMetrics } from '../sim/contact.js';
+import { LandingJudge, EMPTY_CONTACT, groundTiltDeg, touchdownMetrics } from '../sim/contact.js';
 import { lerp } from '../math/vec3.js';
 import { slerp } from '../math/quat.js';
 import { buildWorld, makeStartState, landingDistance, computeScore, medalFor } from './missions.js';
@@ -39,7 +39,7 @@ export class FlightSession {
     const status = this.judge.update({
       contact,
       engineOff: !this.state.engineOn && this.state.ignition === 0,
-      tiltDeg: tiltDeg(this.state),
+      tiltDeg: groundTiltDeg(this.state, contact), // tip-over is judged against the ground, not the local vertical
       metricsFn: () => touchdownMetrics(this.state, contact, this.world.body),
       dt,
     });

@@ -126,6 +126,7 @@ function endFlight(result) {
   save();
   state = 'results';
   hud.show(false);
+  setTimeout(() => { if (state === 'results') input.setGuard(false); }, 800); // a still-held Ctrl+key must not fire on the results screen
   const next = MISSIONS.find((m) => m.unlockedBy === mission.id && data.unlocked.includes(m.id));
   UI.renderResults(screens, {
     mission, result, newBest,

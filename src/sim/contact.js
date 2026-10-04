@@ -39,11 +39,23 @@ export function computeContacts(s, zcm, body, cfg = CONFIG) {
 
 export const tiltDeg = (s) => angleBetween(rotate(s.q, [0, 0, 1]), s.r) / DEG;
 
-export function touchdownMetrics(s, contact, body) {
+// Normal of the ground plane under the four feet (falls back to the local vertical).
+function legPlaneNormal(s, contact) {
   const up = normalize(s.r);
   const g = contact.feet.map((f) => f.groundPoint);
-  let n = g.length === 4 ? normalize(cross(sub(g[0], g[1]), sub(g[2], g[3]))) : up;
-  if (dot(n, up) < 0) n = scale(n, -1);
+  const n = g.length === 4 ? normalize(cross(sub(g[0], g[1]), sub(g[2], g[3]))) : up;
+  return dot(n, up) < 0 ? scale(n, -1) : n;
+}
+
+// Tilt relative to the ground under the feet: a lander resting square on a slope is not tipping.
+export function groundTiltDeg(s, contact) {
+  if (contact.feet.length !== 4) return tiltDeg(s);
+  return angleBetween(rotate(s.q, [0, 0, 1]), legPlaneNormal(s, contact)) / DEG;
+}
+
+export function touchdownMetrics(s, contact, body) {
+  const up = normalize(s.r);
+  const n = legPlaneNormal(s, contact);
   const vn = dot(s.v, n);
   return {
     vs: Math.abs(vn),
