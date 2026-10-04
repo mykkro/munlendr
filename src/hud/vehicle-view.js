@@ -12,7 +12,7 @@ export class VehicleView {
     this.ctx = hiDpiContext(canvas, W, H);
   }
 
-  draw(t, difficulty) {
+  draw(t, comLabel) {
     const ctx = this.ctx, cx = W / 2;
     ctx.clearRect(0, 0, W, H);
     ctx.lineWidth = 2;
@@ -64,6 +64,6 @@ export class VehicleView {
     ctx.fillText(`${t.lTop.toFixed(2)}`, cx + HALF_W + 7, (toY(3) + yc) / 2 + 3);
     ctx.fillText(`${t.lBot.toFixed(2)}`, cx + HALF_W + 7, (toY(-3) + yc) / 2 + 3);
     ctx.textAlign = 'center';
-    ctx.fillText(difficulty === 'hard' ? 'CoM moves' : 'CoM fixed', cx, H - 2);
+    ctx.fillText(comLabel, cx, H - 2);
   }
 }

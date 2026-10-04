@@ -54,3 +54,15 @@ test('settling counts down; low fuel and outcomes are reported', () => {
   assert.ok(statusMessages({ t: low, judge: judge('flying'), outcome: null }).some((m) => m.text === 'LOW FUEL'));
   assert.deepEqual(statusMessages({ t, judge: judge('landed'), outcome: 'landed' }), [{ text: 'LANDED', level: 'good' }]);
 });
+
+test('status messages follow the chosen language', async () => {
+  const { setLanguage } = await import('../src/i18n.js');
+  const t = { ...tele(stateAt(site, 3.4, 0)), engineOn: true };
+  setLanguage('cs');
+  try {
+    assert.equal(statusMessages({ t, judge: judge('touchdown'), outcome: null })[0].text, 'DOTEK — VYPNI MOTOR');
+    assert.equal(statusMessages({ t, judge: judge('landed'), outcome: 'landed' })[0].text, 'PŘISTÁNO');
+  } finally {
+    setLanguage('en');
+  }
+});

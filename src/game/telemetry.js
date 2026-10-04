@@ -3,6 +3,7 @@ import { dot, sub, scale, length, normalize, angleBetween, DEG } from '../math/v
 import { rotate } from '../math/quat.js';
 import { tangentBasis, surfaceOffset, bearingDeg } from '../sim/frame.js';
 import { totalMass, centerOfMassZ, leverArms, deltaVRemaining } from '../sim/rocket.js';
+import { t as tr } from '../i18n.js';
 
 export function computeTelemetry({ state, world, difficulty, fuelCapacity, rcsCapacity, throttleCmd, cfg = CONFIG }) {
   const rc = cfg.rocket;
@@ -59,15 +60,15 @@ export function computeTelemetry({ state, world, difficulty, fuelCapacity, rcsCa
 }
 
 export function statusMessages({ t, judge, outcome }) {
-  if (outcome) return [{ text: outcome === 'landed' ? 'LANDED' : 'CRASHED', level: outcome === 'landed' ? 'good' : 'bad' }];
+  if (outcome) return [{ text: tr(outcome === 'landed' ? 'msg.landed' : 'msg.crashed'), level: outcome === 'landed' ? 'good' : 'bad' }];
   const out = [];
   if (judge.status === 'touchdown') {
-    if (t.engineOn || t.igniting) out.push({ text: 'CONTACT — CUT ENGINE', level: 'warn' });
-    else out.push({ text: `HOLD ${Math.max(1, Math.ceil(judge.cfg.settleTime - judge.settle))}`, level: 'good' });
+    if (t.engineOn || t.igniting) out.push({ text: tr('msg.cutEngine'), level: 'warn' });
+    else out.push({ text: tr('msg.hold', { n: Math.max(1, Math.ceil(judge.cfg.settleTime - judge.settle)) }), level: 'good' });
   }
-  if (t.fuel <= 0) out.push({ text: 'NO FUEL', level: 'bad' });
-  else if (t.fuelPct < 0.1) out.push({ text: 'LOW FUEL', level: 'warn' });
-  if (t.rcs <= 0) out.push({ text: 'NO RCS', level: 'bad' });
-  else if (t.rcsPct < 0.15) out.push({ text: 'LOW RCS', level: 'warn' });
+  if (t.fuel <= 0) out.push({ text: tr('msg.noFuel'), level: 'bad' });
+  else if (t.fuelPct < 0.1) out.push({ text: tr('msg.lowFuel'), level: 'warn' });
+  if (t.rcs <= 0) out.push({ text: tr('msg.noRcs'), level: 'bad' });
+  else if (t.rcsPct < 0.15) out.push({ text: tr('msg.lowRcs'), level: 'warn' });
   return out;
 }

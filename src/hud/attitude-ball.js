@@ -9,7 +9,7 @@ export class AttitudeBall {
     this.ctx = hiDpiContext(canvas, SIZE, SIZE);
   }
 
-  draw(t, { showVelocity }) {
+  draw(t, { showVelocity, north = 'N' }) {
     const ctx = this.ctx, c = SIZE / 2, R = SIZE * 0.44;
     const toXY = (angleDeg, bearing) => {
       const r = Math.min(R, (angleDeg / EDGE_DEG) * R), b = (bearing * Math.PI) / 180;
@@ -28,7 +28,7 @@ export class AttitudeBall {
     ctx.fillStyle = COLORS.text;
     ctx.font = '700 10px ui-monospace, Consolas, monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('N', c, c - R + 10);
+    ctx.fillText(north, c, c - R + 10);
 
     if (showVelocity && t.speed > 0.2) {
       const [ve, vn, vu] = t.velLocal;

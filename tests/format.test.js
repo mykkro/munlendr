@@ -34,3 +34,10 @@ test('burn-now urgency', () => {
 test('escapeHtml', () => {
   assert.equal(escapeHtml('<b>"x" & \'y\'</b>'), '&lt;b&gt;&quot;x&quot; &amp; &#39;y&#39;&lt;/b&gt;');
 });
+
+test('compass takes translated points', () => {
+  const cz = 'S,SV,V,JV,J,JZ,Z,SZ'.split(',');
+  assert.equal(compass(90, cz), 'V');
+  assert.equal(compass(225, cz), 'JZ');
+  assert.equal(compass(null, cz), '');
+});

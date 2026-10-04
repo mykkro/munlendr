@@ -5,12 +5,14 @@ import { Hud } from './hud/hud.js';
 import { MISSIONS, unlocksAfter } from './game/missions.js';
 import { createStorage, recordAttempt, isNewBest } from './game/storage.js';
 import * as UI from './ui/screens.js';
+import { t, setLanguage, detectLanguage } from './i18n.js';
 
 const canvas = document.getElementById('view');
 const screens = document.getElementById('screens');
 const hud = new Hud(document.getElementById('hud'));
 const storage = createStorage();
 let data = storage.load();
+setLanguage(data.settings.language ?? detectLanguage(navigator.languages));
 hud.setScale(data.settings.hudScale);
 
 const input = new Input(window);
@@ -21,7 +23,7 @@ let rendererError = null;
 try {
   sr = new SceneRenderer(canvas);
 } catch (e) {
-  rendererError = `This browser could not start WebGL (${e.message}).`;
+  rendererError = e.message;
 }
 
 let flight = null;
@@ -29,6 +31,19 @@ let current = null; // { mission, difficulty }
 let state = 'menu'; // menu | loading | flying | paused | results
 
 const save = () => storage.save(data);
+
+// Every menu screen is drawn through show(), so a language switch can redraw whatever is on screen.
+let redraw = null;
+function show(render) {
+  redraw = render;
+  render();
+}
+
+function changeLanguage(lang) {
+  data = { ...data, settings: { ...data.settings, language: setLanguage(lang) } };
+  save();
+  redraw?.();
+}
 
 function stopFlight() {
   flight?.dispose();
@@ -40,21 +55,22 @@ function stopFlight() {
 function showTitle() {
   stopFlight();
   state = 'menu';
-  if (rendererError) return UI.renderError(screens, { message: rendererError, onBack: () => location.reload() });
-  UI.renderTitle(screens, { onPlay: showSelect, onHelp: () => UI.renderHelp(screens, { onBack: showTitle }), onSettings: () => showSettings(showTitle) });
+  if (rendererError) return show(() => UI.renderError(screens, { message: t('error.webgl', { msg: rendererError }), onBack: () => location.reload() }));
+  show(() => UI.renderTitle(screens, { onPlay: showSelect, onHelp: () => show(() => UI.renderHelp(screens, { onBack: showTitle })), onSettings: () => showSettings(showTitle), onLanguage: changeLanguage }));
 }
 
 function showSelect() {
-  UI.renderSelect(screens, { data, onPick: (id) => showBriefing(MISSIONS.find((m) => m.id === id)), onBack: showTitle });
+  show(() => UI.renderSelect(screens, { data, onPick: (id) => showBriefing(MISSIONS.find((m) => m.id === id)), onBack: showTitle }));
 }
 
 function showBriefing(mission, difficulty = current?.difficulty ?? 'easy') {
-  UI.renderBriefing(screens, { mission, difficulty, onStart: (d) => startFlight(mission, d), onBack: showSelect });
+  show(() => UI.renderBriefing(screens, { mission, difficulty, onStart: (d) => startFlight(mission, d), onBack: showSelect }));
 }
 
 function showSettings(back) {
-  UI.renderSettings(screens, {
+  show(() => UI.renderSettings(screens, {
     settings: data.settings,
+    onLanguage: changeLanguage,
     onChange: (settings) => {
       data = { ...data, settings };
       save();
@@ -62,26 +78,28 @@ function showSettings(back) {
       flight?.applySettings(settings);
     },
     onBack: back,
-  });
+  }));
 }
 
 async function startFlight(mission, difficulty) {
   stopFlight();
   current = { mission, difficulty };
   state = 'loading';
-  UI.renderLoading(screens, 'Loading terrain…');
+  redraw = null;
+  UI.renderLoading(screens, t('loading.terrain'));
   const f = new Flight({ sceneRenderer: sr, input, mission, difficulty, settings: data.settings, hud, onEnd: endFlight, onPauseRequest: pauseFlight });
   flight = f;
   try {
-    await f.load((pending) => UI.updateLoading(screens, pending > 0 ? `Loading terrain… ${pending} tiles to go` : 'Almost there…'));
+    await f.load((pending) => UI.updateLoading(screens, pending > 0 ? t('loading.tiles', { n: pending }) : t('loading.almost')));
   } catch (e) {
     if (flight !== f) return; // the player left while loading
     stopFlight();
     state = 'menu';
-    UI.renderError(screens, { message: e.message, onBack: showTitle });
+    show(() => UI.renderError(screens, { message: e.message, onBack: showTitle }));
     return;
   }
   if (flight !== f) return;
+  redraw = null;
   UI.hideScreens(screens);
   canvas.classList.remove('hidden');
   sr.resize();
@@ -91,13 +109,13 @@ async function startFlight(mission, difficulty) {
 }
 
 function showPauseMenu() {
-  UI.renderPause(screens, {
+  show(() => UI.renderPause(screens, {
     onResume: resumeFlight,
     onRestart: () => startFlight(current.mission, current.difficulty),
-    onHelp: () => UI.renderHelp(screens, { onBack: showPauseMenu }),
+    onHelp: () => show(() => UI.renderHelp(screens, { onBack: showPauseMenu })),
     onSettings: () => showSettings(showPauseMenu),
     onQuit: showTitle,
-  });
+  }));
 }
 
 function pauseFlight() {
@@ -109,6 +127,7 @@ function pauseFlight() {
 
 function resumeFlight() {
   if (!flight || state !== 'paused') return;
+  redraw = null;
   UI.hideScreens(screens);
   state = 'flying';
   flight.resume();
@@ -129,13 +148,13 @@ function endFlight(result) {
   hud.show(false);
   setTimeout(() => { if (state === 'results') input.setGuard(false); }, 800); // a still-held Ctrl+key must not fire on the results screen
   const next = MISSIONS.find((m) => m.unlockedBy === mission.id && data.unlocked.includes(m.id));
-  UI.renderResults(screens, {
+  show(() => UI.renderResults(screens, {
     mission, result, newBest,
     hasNext: result.outcome === 'landed' && !!next,
     onRetry: () => startFlight(mission, difficulty),
     onNext: () => { stopFlight(); state = 'menu'; showBriefing(next, difficulty); },
     onMenu: showTitle,
-  });
+  }));
 }
 
 window.addEventListener('keydown', (e) => {

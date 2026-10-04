@@ -7,7 +7,7 @@ export function defaultData() {
     unlocked: [1],
     best: {},
     history: [],
-    settings: { controlFrame: 'camera', invertDrag: false, hudScale: 1 },
+    settings: { controlFrame: 'camera', invertDrag: false, hudScale: 1, language: null }, // null = follow the browser
   };
 }
 

@@ -33,6 +33,15 @@ test('older saves gain new settings keys', () => {
   assert.equal(createStorage(b).load().settings.hudScale, 1);
 });
 
+test('language is unset (auto-detect) by default and survives a round trip', () => {
+  assert.equal(defaultData().settings.language, null);
+  const st = createStorage(memory());
+  const d = defaultData();
+  d.settings.language = 'cs';
+  st.save(d);
+  assert.equal(st.load().settings.language, 'cs');
+});
+
 test('unavailable or throwing storage never throws', () => {
   assert.deepEqual(createStorage(null).load(), defaultData());
   assert.equal(createStorage(null).save(defaultData()), false);

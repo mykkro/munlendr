@@ -28,7 +28,7 @@ export function fmtClock(s) {
 export const fmtBearing = (deg) => (deg == null ? '—' : `${String(Math.round(deg) % 360).padStart(3, '0')}°`);
 
 const POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-export const compass = (deg) => (deg == null ? '' : POINTS[Math.round(deg / 45) % 8]);
+export const compass = (deg, points = POINTS) => (deg == null ? '' : points[Math.round(deg / 45) % 8]);
 
 export function burnLevel(agl, burn) {
   if (!Number.isFinite(burn)) return 'bad';

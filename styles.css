@@ -183,3 +183,9 @@ select, input[type="range"] { font: 600 14px var(--font); }
 .help .keys td:first-child, .briefing .keys td:first-child { width: 150px; }
 .help .keys td.pad { width: 130px; }
 .help .hud-guide td:first-child { width: 120px; }
+.lang-switch { display: flex; gap: 8px; }
+.lang-switch.corner { position: fixed; top: 16px; right: 16px; z-index: 2; }
+.flag { padding: 5px; border-radius: 10px; line-height: 0; opacity: 0.55; background: rgba(30, 24, 64, 0.7); }
+.flag:hover:not(:disabled) { opacity: 0.9; }
+.flag.sel { opacity: 1; border-color: var(--good); }
+.flag svg { width: 36px; height: 24px; display: block; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); }

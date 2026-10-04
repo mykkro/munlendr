@@ -8,7 +8,7 @@ export class NavMap {
     this.ctx = hiDpiContext(canvas, SIZE, SIZE);
   }
 
-  draw(t) {
+  draw(t, north = 'N') {
     const ctx = this.ctx, c = SIZE / 2, R = SIZE * 0.45;
     const range = RANGES.find((r) => r >= Math.max(40, t.targetDistance * 1.25)) ?? RANGES[RANGES.length - 1];
     const k = R / range;
@@ -35,6 +35,6 @@ export class NavMap {
     ctx.textAlign = 'left';
     ctx.fillText(range >= 1000 ? `${range / 1000} km` : `${range} m`, 4, SIZE - 4);
     ctx.textAlign = 'center';
-    ctx.fillText('N', c, c - R + 10);
+    ctx.fillText(north, c, c - R + 10);
   }
 }

@@ -11,7 +11,7 @@ import { Debris } from './render/debris.js';
 import { CameraRig, controlFrame } from './render/cameras.js';
 import { add, normalize, scale } from './math/vec3.js';
 import { computeTelemetry, statusMessages } from './game/telemetry.js';
-import { VIEW_LABELS } from './render/cameras.js';
+import { t as tr } from './i18n.js';
 
 const LOAD_TIMEOUT_MS = 45000;
 const END_DELAY = 2.5; // seconds between touchdown/crash and the results screen
@@ -83,7 +83,7 @@ export class Flight {
         onProgress(pending);
         stable = pending === 0 ? stable + 1 : 0;
         if (stable >= 3) return resolve();
-        if (performance.now() - start > LOAD_TIMEOUT_MS) return reject(new Error('The terrain took too long to load.'));
+        if (performance.now() - start > LOAD_TIMEOUT_MS) return reject(new Error(tr('error.loadTimeout')));
         requestAnimationFrame(tick);
       };
       tick();
@@ -213,13 +213,13 @@ export class Flight {
         fuelCapacity: this.mission.fuel, rcsCapacity: this.mission.rcs, throttleCmd: this.input.throttle,
       });
       this.hud.update(t, {
-        missionName: `M${this.mission.id} · ${this.mission.name}`,
+        missionName: tr('hud.mission', { id: this.mission.id, name: tr(`mission.${this.mission.id}.name`) }),
         time: snap.time,
         sas: s.sas,
         aids: this.ui.aids,
         aidsAvailable: s.aidsAvailable,
         controlFrame: this.controlFrameMode,
-        cameraName: VIEW_LABELS[this.rig.active],
+        camera: this.rig.active,
         messages: statusMessages({ t, judge: s.judge, outcome: s.outcome?.outcome ?? null }),
         burnNow: this.predictions?.burnNow ?? null,
         vehicleView: this.ui.vehicleView,

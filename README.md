@@ -1,6 +1,8 @@
 # Moon Lander
 
-A toon-shaded 3D lunar lander for the browser. Plain HTML and JavaScript, no backend. Progress, best scores and settings are kept in `localStorage`.
+A toon-shaded 3D lunar lander for the browser, in English and Czech (flag switcher on the title screen and in Settings). Plain HTML and JavaScript, no backend. Progress, best scores and settings are kept in `localStorage`.
+
+Translations live in `src/i18n/en.js` and `src/i18n/cs.js`; a test fails if a key is missing from either.
 
 ## Run
 
