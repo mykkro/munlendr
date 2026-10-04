@@ -10,6 +10,8 @@ import { Dust } from './render/dust.js';
 import { Debris } from './render/debris.js';
 import { CameraRig, controlFrame } from './render/cameras.js';
 import { add, normalize, scale } from './math/vec3.js';
+import { computeTelemetry, statusMessages } from './game/telemetry.js';
+import { VIEW_LABELS } from './render/cameras.js';
 
 const LOAD_TIMEOUT_MS = 45000;
 const END_DELAY = 2.5; // seconds between touchdown/crash and the results screen
@@ -204,6 +206,26 @@ export class Flight {
       groundPoint, up, intensity: snap.throttle * Math.max(0, 1 - agl / 20),
     });
     this.debris.update(dt, this.sr, this.world.body);
+    if (this.hud) {
+      const t = computeTelemetry({
+        state: snap, world: this.world, difficulty: this.difficulty,
+        fuelCapacity: this.mission.fuel, rcsCapacity: this.mission.rcs, throttleCmd: this.input.throttle,
+      });
+      this.hud.update(t, {
+        missionName: `M${this.mission.id} · ${this.mission.name}`,
+        time: snap.time,
+        sas: s.sas,
+        aids: this.ui.aids,
+        aidsAvailable: s.aidsAvailable,
+        controlFrame: this.controlFrameMode,
+        cameraName: VIEW_LABELS[this.rig.active],
+        messages: statusMessages({ t, judge: s.judge, outcome: s.outcome?.outcome ?? null }),
+        burnNow: this.predictions?.burnNow ?? null,
+        vehicleView: this.ui.vehicleView,
+        visible: this.ui.hudVisible,
+        difficulty: this.difficulty,
+      });
+    }
     this.sr.render();
   }
 
