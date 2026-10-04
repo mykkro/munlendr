@@ -90,7 +90,6 @@ export class LandingJudge {
 
   update({ contact, engineOff, tiltDeg: tilt, metricsFn, dt }) {
     if (this.status === 'landed' || this.status === 'crashed') return this.status;
-    if (contact.hullHit) return this.crash('hull');
     const touching = contact.anyFoot;
     if (touching && !this.wasTouching) {
       const g = gradeTouchdown(metricsFn(), this.cfg);
@@ -105,6 +104,8 @@ export class LandingJudge {
       }
       this.status = 'touchdown';
     }
+    // graded first: a fast impact reports its speed even when the hull also hits on that step
+    if (contact.hullHit) return this.crash('hull');
     this.wasTouching = touching;
     if (this.status !== 'touchdown') return this.status;
     if (tilt >= this.cfg.tipOverTilt) return this.crash('tipped');

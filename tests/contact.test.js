@@ -108,6 +108,13 @@ test('bounce keeps the worse grade', () => {
   assert.equal(j.grade, 'safe');
 });
 
+test('a fast impact that hits legs and hull in the same step reports the speed, not the hull', () => {
+  const j = new LandingJudge();
+  j.update({ contact: contactOf(true, true), engineOff: true, tiltDeg: 1, metricsFn: () => ({ ...good(), vs: 40 }), dt });
+  assert.equal(j.status, 'crashed');
+  assert.equal(j.reason, 'vs');
+});
+
 test('tipping past 10 degrees during settle is a crash', () => {
   const j = new LandingJudge();
   j.update({ contact: contactOf(true), engineOff: true, tiltDeg: 1, metricsFn: good, dt });
