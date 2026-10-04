@@ -160,7 +160,8 @@ select, input[type="range"] { font: 600 14px var(--font); }
   font-size: 58px;
   line-height: 1;
   letter-spacing: 0.01em;
-  -webkit-text-stroke: 2px var(--ink);
+  -webkit-text-stroke: 6px var(--ink);
+  paint-order: stroke fill; /* outline behind the glyph, so overlapping strokes (the d) show no inner lines */
   text-shadow: 0 5px 0 var(--accent), 0 9px 0 var(--ink);
   margin-bottom: 6px;
 }
