@@ -14,6 +14,7 @@ const TEMPLATE = `
   <span class="hint"><kbd>Esc</kbd> pause &amp; help</span>
   <div class="hud-messages" data-k="messages"></div>
 </div>
+<div class="hud-col left">
 <div class="panel hud-height">
   <h3>Height</h3>
   <div class="row big"><label>AGL</label><b data-k="agl"></b></div>
@@ -27,6 +28,8 @@ const TEMPLATE = `
   <div class="row"><label>Horizontal <i class="arrow" data-k="hArrow">➤</i></label><b data-k="hs"></b></div>
   <div class="row"><label>Total</label><b data-k="speed"></b></div>
 </div>
+</div>
+<div class="hud-col right">
 <div class="panel hud-nav">
   <h3>Navigation</h3>
   <canvas data-k="map"></canvas>
@@ -39,6 +42,7 @@ const TEMPLATE = `
   <canvas data-k="ball"></canvas>
   <div class="row"><label>Tilt</label><b data-k="tilt"></b></div>
   <div class="row"><label>Rate</label><b data-k="rate"></b></div>
+</div>
 </div>
 <div class="panel hud-propulsion">
   <div class="throttle">

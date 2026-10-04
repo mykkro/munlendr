@@ -48,10 +48,13 @@ html, body {
 .warn { color: var(--warn); }
 .bad { color: var(--bad); }
 .hud-status { top: 12px; left: 50%; translate: -50% 0; transform-origin: top center; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; max-width: 52vw; }
-.hud-height { top: 12px; left: 12px; width: 220px; transform-origin: top left; }
-.hud-velocity { top: 168px; left: 12px; width: 220px; transform-origin: top left; }
-.hud-nav { top: 12px; right: 12px; width: 190px; transform-origin: top right; }
-.hud-attitude { top: 252px; right: 12px; width: 190px; transform-origin: top right; }
+/* left and right panel stacks scale as one, so a lower panel always sits right under the one above */
+.hud-col { position: absolute; top: 12px; display: flex; flex-direction: column; gap: 12px; scale: var(--hud-scale); }
+.hud-col.left { left: 12px; transform-origin: top left; }
+.hud-col.right { right: 12px; transform-origin: top right; }
+#hud .hud-col .panel { position: static; scale: none; }
+.hud-height, .hud-velocity { width: 220px; }
+.hud-nav, .hud-attitude { width: 190px; }
 .hud-propulsion { bottom: 12px; left: 50%; translate: -50% 0; transform-origin: bottom center; width: 420px; display: flex; gap: 14px; }
 .hud-vehicle { bottom: 12px; left: 12px; transform-origin: bottom left; }
 .hud-mission { font-weight: 800; }
